@@ -10,7 +10,6 @@ const ProductsCard = ({ addToCart, searchQuery }) => {
     setProducts(productsData || []);
   }, []);
 
-  // 🔎 Filtrar con buscador
   const filteredProducts = products.filter((prod) =>
     (prod.nombre || "").toLowerCase().includes(searchQuery.toLowerCase())
   );

@@ -4,7 +4,6 @@ function Footer() {
   return (
     <footer className="footer" id="footer">
       <div className="footer-content">
-        {/* IZQUIERDA */}
         <div className="footer-section footer-left">
           <ul>
             <li><a href="#">📜⚖️ Aviso Legal</a></li>
@@ -14,7 +13,6 @@ function Footer() {
           </ul>
         </div>
 
-        {/* CENTRO */}
         <div className="footer-section footer-center">
           <div className="footer-logo">🛍️ Shop-Stev ✨</div>
           <div className="footer-social">
@@ -33,7 +31,6 @@ function Footer() {
           </div>
         </div>
 
-        {/* DERECHA */}
         <div className="footer-section footer-right">
           <ul>
             <li><a href="#">📝📚 Blog</a></li>
@@ -43,7 +40,6 @@ function Footer() {
         </div>
       </div>
 
-      {/* ABAJO */}
       <div className="footer-bottom">
         <p>© 2025 🛒 Shop-Stev 🌟 | Todos los derechos reservados 💎✨</p>
       </div>

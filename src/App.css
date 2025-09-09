@@ -385,7 +385,7 @@ header {
   transform: scale(0.95);
 }
 
-/* --- RESPONSIVE --- */
+/* --- RESPONSIVE FOOTER --- */
 @media (max-width: 900px) {
   .footer-content {
     flex-direction: column;
@@ -399,12 +399,52 @@ header {
   }
 }
 
-@media (max-width: 768px) {
+/* --- RESPONSIVE NAVBAR --- */
+.menu-toggle {
+  display: none;
+  font-size: 1.8rem;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  z-index: 1100;
+}
+
+@media (max-width: 900px) {
   .navbar-menu {
-    display: none;
+    position: fixed;
+    top: 0;
+    left: -300px; 
+    height: 100%;
+    width: 250px;
+    background: #111;
+    flex-direction: column;
+    padding: 40px 20px;
+    gap: 1.5rem;
+    transition: left 0.3s ease-in-out;
+    z-index: 1000;
+  }
+
+  .navbar-menu.active {
+    left: 0;
+  }
+
+  .navbar-link {
+    font-size: 1.1rem;
+    padding: 10px;
+    border-radius: 6px;
+  }
+
+  .navbar-link:hover {
+    background: #222;
+    color: #16a34a;
+  }
+
+  .menu-toggle {
+    display: block;
   }
 
   .navbar-search {
-    width: 120px;
+    width: 140px;
   }
 }
