@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { FaShoppingCart } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 function Navbar({ cartItems, removeFromCart, onSearch }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false); // 👈 NUEVO
+  const [menuOpen, setMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
   const toggleCart = () => setIsOpen(!isOpen);
-  const toggleMenu = () => setMenuOpen(!menuOpen); // 👈 NUEVO
+  const toggleMenu = () => setMenuOpen(!menuOpen); 
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
@@ -18,21 +19,21 @@ function Navbar({ cartItems, removeFromCart, onSearch }) {
 
   return (
     <nav className="navbar">
-      <div className="navbar-logo">🌐🛍️✨ Shop-Stev ✨🛍️🌐</div>
+      <div className="navbar-logo">Shop-Stev</div>
 
       <button className="menu-toggle" onClick={toggleMenu}>
         ☰
       </button>
 
       <ul className={`navbar-menu ${menuOpen ? "active" : ""}`}>
-        <li><a href="#inicio" className="navbar-link">🏠 Inicio</a></li>
-        <li><a href="#catalogo" className="navbar-link">📦 Catálogo</a></li>
-        <li><a href="#footer" className="navbar-link">☎️ Contacto</a></li>
+        <li><Link to="/" className="navbar-link">Inicio</Link></li>
+        <li><Link to="/" className="navbar-link">Catálogo</Link></li>
+        <li><Link to="/contacto" className="navbar-link">Contacto</Link></li>
       </ul>
 
       <input
         type="text"
-        placeholder="🔍 Buscar productos..."
+        placeholder="Buscar productos..."
         value={searchTerm}
         onChange={handleSearchChange}
         className="navbar-search"
@@ -40,15 +41,15 @@ function Navbar({ cartItems, removeFromCart, onSearch }) {
 
       <div className="navbar-cart">
         <button onClick={toggleCart}>
-          🛒 <FaShoppingCart /> ({cartItems.length})
+          <FaShoppingCart /> ({cartItems.length})
         </button>
       </div>
 
       {isOpen && (
         <div className="cart-modal-overlay" onClick={toggleCart}>
           <div className="cart-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="cart-close-btn" onClick={toggleCart}>❌</button>
-            <h3>🛍️ Tu carrito</h3>
+            <button className="cart-close-btn" onClick={toggleCart}>Cerrar</button>
+            <h3>Tu carrito</h3>
 
             <ul className="cart-list">
               {cartItems.length === 0 ? (
@@ -65,7 +66,7 @@ function Navbar({ cartItems, removeFromCart, onSearch }) {
                       className="cart-remove-btn"
                       onClick={() => removeFromCart(idx)}
                     >
-                      🗑️
+                      Eliminar
                     </button>
                   </li>
                 ))

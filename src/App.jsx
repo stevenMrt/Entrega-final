@@ -1,14 +1,12 @@
-import './App.css';
-import './Components/ProductsCard.css';
-import { useState } from 'react';
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-
-import Navbar from './features/share/components/Navbar';
+import { Routes, Route } from "react-router-dom";
+import MainLayout from './features/share/layouts/MainLayout';
 import Banner from './features/dashboard/components/Banner';
 import ProductsCard from './features/products/pages/ProductsCard';
-import Footer from './features/share/components/Footer';
-import MainLayout from './features/share/layouts/MainLayout';
+import ContactPage from './features/Contacto/pages/ContactPages';
+import { ToastContainer, toast } from "react-toastify";
+import { useState } from "react";
+import './App.css';
+import './Components/ProductsCard.css';
 
 function App() {
   const [cartItems, setCartItems] = useState([]);
@@ -16,38 +14,31 @@ function App() {
 
   const addToCart = (product) => {
     setCartItems([...cartItems, product]);
-    toast.success(`${product.name} agregado al carrito 🛒`, {
-      position: "top-right",
-      autoClose: 2000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-      theme: "colored",
-    });
+    toast.success(`${product.name} agregado al carrito 🛒`, { autoClose: 2000 });
   };
 
   const removeFromCart = (index) => {
     const newCart = [...cartItems];
     newCart.splice(index, 1);
     setCartItems(newCart);
-    toast.info("Producto eliminado del carrito ❌", {
-      position: "top-right",
-      autoClose: 2000,
-    });
+    toast.info("Producto eliminado del carrito ❌", { autoClose: 2000 });
   };
 
   return (
-    <MainLayout 
-      cartItems={cartItems} 
-      removeFromCart={removeFromCart} 
-      onSearch={setSearchQuery}
-    >
-      <Banner />
-      <ProductsCard addToCart={addToCart} searchQuery={searchQuery} />
+    <>
+      <MainLayout cartItems={cartItems} removeFromCart={removeFromCart} onSearch={setSearchQuery}>
+        <Routes>
+          <Route path="/" element={
+            <>
+              <Banner />
+              <ProductsCard addToCart={addToCart} searchQuery={searchQuery} />
+            </>
+          } />
+          <Route path="/contacto" element={<ContactPage />} />
+        </Routes>
+      </MainLayout>
       <ToastContainer />
-    </MainLayout>
+    </>
   );
 }
 

@@ -1,4 +1,3 @@
-/* --- GENERAL --- */
 body {
   background-color: #ffffff;
   font-family: Arial, sans-serif;
@@ -7,7 +6,6 @@ body {
   color: #111111;
 }
 
-/* --- HEADER / NAVBAR --- */
 header {
   background-color: #000000;
   border-bottom: 1px solid #e5e5e5;
@@ -30,7 +28,6 @@ header {
   color: #16a34a;
 }
 
-/* --- MENÚ --- */
 .navbar-menu {
   display: flex;
   gap: 2rem;
@@ -50,7 +47,6 @@ header {
   color: #16a34a;
 }
 
-/* --- BUSCADOR --- */
 .navbar-search {
   padding: 6px 10px;
   border: 1px solid #e5e5e5;
@@ -68,7 +64,6 @@ header {
   box-shadow: 0 0 6px rgba(22, 163, 74, 0.4);
 }
 
-/* --- CARRITO --- */
 .navbar-cart button {
   background: #16a34a;
   border: none;
@@ -84,7 +79,6 @@ header {
   background: #15803d;
 }
 
-/* --- MODAL DEL CARRITO --- */
 .cart-modal-overlay {
   position: fixed;
   top: 0;
@@ -197,7 +191,6 @@ header {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* --- HERO SECTION --- */
 .hero-section {
   position: relative;
   text-align: center;
@@ -227,7 +220,6 @@ header {
   user-select: none;
 }
 
-/* --- FOOTER --- */
 .footer {
   background: #000000;
   color: #ffffff;
@@ -310,7 +302,6 @@ header {
   border-top: 1px solid #444444;
 }
 
-/* --- PRODUCT CARD --- */
 .product-card {
   background: #ffffff;
   border: 1px solid #e5e5e5;
@@ -360,7 +351,6 @@ header {
   margin: 8px 0;
 }
 
-/* --- BOTÓN AGREGAR AL CARRITO --- */
 .product-card button {
   background: #16a34a;
   color: #fff;
@@ -385,7 +375,6 @@ header {
   transform: scale(0.95);
 }
 
-/* --- RESPONSIVE FOOTER --- */
 @media (max-width: 900px) {
   .footer-content {
     flex-direction: column;
@@ -399,7 +388,6 @@ header {
   }
 }
 
-/* --- RESPONSIVE NAVBAR --- */
 .menu-toggle {
   display: none;
   font-size: 1.8rem;
