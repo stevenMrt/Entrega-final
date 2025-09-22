@@ -16,16 +16,16 @@ function Footer() {
         <div className="footer-section footer-center">
           <div className="footer-logo">Shop-Stev</div>
           <div className="footer-social">
-            <a href="https://facebook.com/KeyStore" target="_blank" rel="noreferrer" title="Facebook">
+            <a href="" target="_blank" rel="noreferrer" title="Facebook">
               <FaFacebookF /> 
             </a>
-            <a href="https://twitter.com/KeyStore" target="_blank" rel="noreferrer" title="Twitter">
+            <a href="#" target="_blank" rel="noreferrer" title="Twitter">
               <FaTwitter /> 
             </a>
-            <a href="https://instagram.com/KeyStore" target="_blank" rel="noreferrer" title="Instagram">
+            <a href="#" target="_blank" rel="noreferrer" title="Instagram">
               <FaInstagram /> 
             </a>
-            <a href="https://linkedin.com/company/KeyStore" target="_blank" rel="noreferrer" title="LinkedIn">
+            <a href="#" target="_blank" rel="noreferrer" title="LinkedIn">
               <FaLinkedinIn /> 
             </a>
           </div>

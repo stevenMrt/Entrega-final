@@ -22,11 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
 node_modules
 public
 index.html
-package.json
 package-lock.json
-README.md
 jj.jsx
