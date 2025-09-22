@@ -23,6 +23,5 @@ dist-ssr
 *.sln
 *.sw?
 node_modules
-public
 package-lock.json
 jj.jsx
