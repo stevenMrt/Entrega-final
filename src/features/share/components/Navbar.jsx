@@ -1,26 +1,32 @@
 import React, { useState, useEffect } from "react";
-import { FaShoppingCart } from "react-icons/fa";
+import { FaShoppingCart, FaSearch, FaTimes, FaPlus, FaMinus, FaTrash } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
-function Navbar({ cartItems, removeFromCart, onSearch }) {
+function Navbar({ cartItems, removeFromCart, updateQuantity, clearCart, onSearch, user, onLogout }) {
   const [isOpen, setIsOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
 
   const toggleCart = () => setIsOpen(!isOpen);
   const toggleMenu = () => setMenuOpen(!menuOpen);
+  const toggleSearch = () => setShowSearch(!showSearch);
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
     if (onSearch) onSearch(e.target.value);
   };
 
-  const total = cartItems.reduce((acc, item) => acc + Number(item.price), 0);
+  const total = cartItems.reduce((acc, item) => acc + (Number(item.price) * (item.quantity || 1)), 0);
+  const totalItems = cartItems.reduce((acc, item) => acc + (item.quantity || 1), 0);
 
-  // 🔹 cerrar menú con ESC
   useEffect(() => {
     const handleEsc = (e) => {
-      if (e.key === "Escape") setMenuOpen(false);
+      if (e.key === "Escape") {
+        setMenuOpen(false);
+        setIsOpen(false);
+        setShowSearch(false);
+      }
     };
     window.addEventListener("keydown", handleEsc);
     return () => window.removeEventListener("keydown", handleEsc);
@@ -29,47 +35,99 @@ function Navbar({ cartItems, removeFromCart, onSearch }) {
   return (
     <>
       <nav className="navbar">
-        <div className="navbar-logo">Shop-Stev</div>
+        <div className="navbar-logo">
+          <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+            Shop-Stev
+          </Link>
+        </div>
 
-        {/* botón hamburguesa */}
         <button
           className="menu-toggle"
           onClick={toggleMenu}
           aria-label="Menú"
           aria-expanded={menuOpen}
         >
-          {menuOpen ? "✖" : "☰"}
+          {menuOpen ? <FaTimes /> : "☰"}
         </button>
 
-        {/* menú lateral */}
         <ul className={`navbar-menu ${menuOpen ? "active" : ""}`}>
           <li>
             <Link to="/" className="navbar-link" onClick={() => setMenuOpen(false)}>Inicio</Link>
           </li>
           <li>
-            <Link to="/" className="navbar-link" onClick={() => setMenuOpen(false)}>Catálogo</Link>
+            <Link 
+              to="/" 
+              className="navbar-link" 
+              onClick={() => {
+                setMenuOpen(false);
+                setTimeout(() => {
+                  document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+              }}
+            >
+              Catálogo
+            </Link>
+          </li>
+          <li>
+            <Link to="/nosotros" className="navbar-link" onClick={() => setMenuOpen(false)}>Nosotros</Link>
           </li>
           <li>
             <Link to="/contacto" className="navbar-link" onClick={() => setMenuOpen(false)}>Contacto</Link>
           </li>
+          <li>
+            <Link to="/wishlist" className="navbar-link" onClick={() => setMenuOpen(false)}>Favoritos</Link>
+          </li>
+          {user ? (
+            <>
+              <li>
+                <span className="user-greeting">Hola, {user.name}</span>
+              </li>
+              <li>
+                <button className="logout-btn" onClick={onLogout}>Cerrar Sesión</button>
+              </li>
+            </>
+          ) : (
+            <li>
+              <Link to="/login" className="navbar-link" onClick={() => setMenuOpen(false)}>Iniciar Sesión</Link>
+            </li>
+          )}
         </ul>
 
-        <input
-          type="text"
-          placeholder="Buscar productos..."
-          value={searchTerm}
-          onChange={handleSearchChange}
-          className="navbar-search"
-        />
-
-        <div className="navbar-cart">
-          <button onClick={toggleCart}>
-            <FaShoppingCart /> ({cartItems.length})
+        <div className="navbar-actions">
+          <button className="search-toggle" onClick={toggleSearch} aria-label="Buscar">
+            <FaSearch />
           </button>
+          
+          {showSearch && (
+            <div className="search-dropdown">
+              <input
+                type="text"
+                placeholder="Buscar productos..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+                className="navbar-search-mobile"
+                autoFocus
+              />
+            </div>
+          )}
+
+          <input
+            type="text"
+            placeholder="Buscar productos..."
+            value={searchTerm}
+            onChange={handleSearchChange}
+            className="navbar-search"
+          />
+
+          <div className="navbar-cart">
+            <button onClick={toggleCart} className="cart-btn">
+              <FaShoppingCart />
+              {totalItems > 0 && <span className="cart-count">{totalItems}</span>}
+            </button>
+          </div>
         </div>
       </nav>
 
-      {/* overlay detrás del menú */}
       {menuOpen && (
         <div
           className="menu-overlay"
@@ -78,46 +136,84 @@ function Navbar({ cartItems, removeFromCart, onSearch }) {
         ></div>
       )}
 
-      {/* modal del carrito */}
       {isOpen && (
         <div className="cart-modal-overlay" onClick={toggleCart}>
           <div className="cart-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="cart-close-btn" onClick={toggleCart}>
-              Cerrar
-            </button>
-            <h3>Tu carrito</h3>
+            <div className="cart-header">
+              <h3>Tu carrito ({totalItems} productos)</h3>
+              <button className="cart-close-btn" onClick={toggleCart}>
+                <FaTimes />
+              </button>
+            </div>
 
-            <ul className="cart-list">
+            <div className="cart-content">
               {cartItems.length === 0 ? (
-                <li>Carrito vacío...</li>
+                <div className="empty-cart">
+                  <FaShoppingCart size={48} />
+                  <p>Tu carrito está vacío</p>
+                  <p>Agrega algunos productos para comenzar</p>
+                </div>
               ) : (
-                cartItems.map((item, idx) => (
-                  <li key={idx} className="cart-item">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="cart-item-img"
-                    />
-                    <div className="cart-item-info">
-                      <span className="cart-item-name">{item.name}</span>
-                      <span className="cart-item-price">${item.price}</span>
-                    </div>
-                    <button
-                      className="cart-remove-btn"
-                      onClick={() => removeFromCart(idx)}
-                    >
-                      Eliminar
-                    </button>
-                  </li>
-                ))
-              )}
-            </ul>
+                <>
+                  <ul className="cart-list">
+                    {cartItems.map((item, idx) => (
+                      <li key={idx} className="cart-item">
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="cart-item-img"
+                        />
+                        <div className="cart-item-info">
+                          <span className="cart-item-name">{item.name}</span>
+                          <span className="cart-item-price">${item.price}</span>
+                          <div className="quantity-controls">
+                            <button 
+                              onClick={() => updateQuantity(idx, (item.quantity || 1) - 1)}
+                              className="quantity-btn"
+                            >
+                              <FaMinus />
+                            </button>
+                            <span className="quantity">{item.quantity || 1}</span>
+                            <button 
+                              onClick={() => updateQuantity(idx, (item.quantity || 1) + 1)}
+                              className="quantity-btn"
+                            >
+                              <FaPlus />
+                            </button>
+                          </div>
+                        </div>
+                        <div className="cart-item-actions">
+                          <span className="item-total">
+                            ${((item.price || 0) * (item.quantity || 1)).toFixed(2)}
+                          </span>
+                          <button
+                            className="cart-remove-btn"
+                            onClick={() => removeFromCart(idx)}
+                            title="Eliminar producto"
+                          >
+                            <FaTrash />
+                          </button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
 
-            {cartItems.length > 0 && (
-              <div className="cart-total">
-                <strong>Total: ${total.toFixed(2)}</strong>
-              </div>
-            )}
+                  <div className="cart-footer">
+                    <div className="cart-total">
+                      <strong>Total: ${total.toFixed(2)}</strong>
+                    </div>
+                    <div className="cart-actions">
+                      <button className="btn-clear" onClick={clearCart}>
+                        Vaciar carrito
+                      </button>
+                      <Link to="/checkout" className="btn-checkout" onClick={toggleCart}>
+                        Proceder al pago
+                      </Link>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}
