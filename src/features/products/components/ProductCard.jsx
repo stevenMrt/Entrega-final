@@ -4,6 +4,7 @@ import { FaHeart, FaRegHeart, FaShoppingCart, FaStar, FaEye } from "react-icons/
 function ProductCard({ id, image, title, category, description, price, rating, addToCart, favorites, toggleFavorite }) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
+
   
   const product = { 
     id: id,
@@ -94,9 +95,6 @@ function ProductCard({ id, image, title, category, description, price, rating, a
             title="Agregar al carrito"
           >
             <FaShoppingCart /> Agregar
-          </button>
-          <button className="btn-outline" title="Vista rápida">
-            <FaEye /> Ver
           </button>
         </div>
       </div>

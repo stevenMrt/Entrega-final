@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authAPI } from '../../../services/api';
-import { FaEye, FaEyeSlash, FaUser, FaLock } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaUser, FaLock, FaEnvelope } from 'react-icons/fa';
 
-const LoginPage = ({ onLogin }) => {
+const RegisterPage = ({ onLogin }) => {
   const [formData, setFormData] = useState({
+    name: '',
     email: '',
-    password: ''
+    password: '',
+    confirmPassword: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -26,8 +28,21 @@ const LoginPage = ({ onLogin }) => {
     setLoading(true);
     setError('');
 
+    if (formData.password !== formData.confirmPassword) {
+      setError('Las contraseñas no coinciden');
+      setLoading(false);
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError('La contraseña debe tener al menos 6 caracteres');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const response = await authAPI.login(formData);
+      const { confirmPassword, ...registerData } = formData;
+      const response = await authAPI.register(registerData);
       localStorage.setItem('shop-stev-token', response.token);
       onLogin(response.user);
       navigate('/home');
@@ -42,13 +57,26 @@ const LoginPage = ({ onLogin }) => {
     <div className="auth-container">
       <div className="auth-card">
         <div className="auth-header">
-          <h1>Iniciar Sesión</h1>
-          <p>Bienvenido de vuelta a Shop-Stev</p>
+          <h1>Crear Cuenta</h1>
+          <p>Únete a Shop-Stev y disfruta de la mejor tecnología</p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
           {error && <div className="error-message">{error}</div>}
           
+          <div className="form-group">
+            <div className="input-wrapper">
+              <input
+                type="text"
+                name="name"
+                placeholder="Nombre completo"
+                value={formData.name}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
+
           <div className="form-group">
             <div className="input-wrapper">
               <input
@@ -82,18 +110,30 @@ const LoginPage = ({ onLogin }) => {
             </div>
           </div>
 
+          <div className="form-group">
+            <div className="input-wrapper">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                name="confirmPassword"
+                placeholder="Confirmar contraseña"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
+
           <button type="submit" className="auth-btn" disabled={loading}>
-            {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+            {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
           </button>
         </form>
 
         <div className="auth-footer">
-          <p>¿No tienes cuenta? <Link to="/register">Regístrate aquí</Link></p>
-          <p><Link to="/forgot-password">¿Olvidaste tu contraseña?</Link></p>
+          <p>¿Ya tienes cuenta? <Link to="/login">Inicia sesión aquí</Link></p>
         </div>
       </div>
     </div>
   );
 };
 
-export default LoginPage;
+export default RegisterPage;

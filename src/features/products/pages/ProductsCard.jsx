@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import ProductCard from "../components/ProductCard";
-import { FaFilter, FaSortAmountDown, FaTh, FaList, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaFilter, FaSortAmountDown, FaTh, FaList, FaChevronLeft, FaChevronRight, FaEye, FaHeart, FaStar } from "react-icons/fa";
+import { productsAPI } from '../../../services/api';
+
 
 const ProductsCard = ({ addToCart, searchQuery, favorites, toggleFavorite }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -12,26 +14,25 @@ const ProductsCard = ({ addToCart, searchQuery, favorites, toggleFavorite }) => 
   const [filterCategory, setFilterCategory] = useState('all');
   const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 });
 
+
   useEffect(() => {
-    const fetchProducts = async () => {
+    const loadProducts = async () => {
       try {
         setLoading(true);
-        const res = await fetch("https://fakestoreapi.com/products");
-        if (!res.ok) throw new Error("Error al cargar productos");
-        const data = await res.json();
+        const data = await productsAPI.getAll();
         setProducts(data);
         
         // Establecer rango de precios dinámico
         const prices = data.map(p => p.price);
         setPriceRange({ min: Math.min(...prices), max: Math.max(...prices) });
       } catch (err) {
-        setError(`No se pudieron cargar los productos. Intenta nuevamente. (${err.message})`);
+        setError(`No se pudieron cargar los productos. ${err.message}`);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProducts();
+    loadProducts();
   }, []);
 
   const categories = [...new Set(products.map(p => p.category))];
@@ -139,10 +140,14 @@ const ProductsCard = ({ addToCart, searchQuery, favorites, toggleFavorite }) => 
       {filteredProducts.length === 0 ? (
         <div className="no-products">
           <p>No se encontraron productos que coincidan con tu búsqueda</p>
-          <button onClick={() => {
-            setFilterCategory('all');
-            setSortBy('default');
-          }}>
+          <button 
+            className="clear-filters-btn"
+            onClick={() => {
+              setFilterCategory('all');
+              setSortBy('default');
+              window.location.reload();
+            }}
+          >
             Limpiar filtros
           </button>
         </div>
@@ -162,8 +167,8 @@ const ProductsCard = ({ addToCart, searchQuery, favorites, toggleFavorite }) => 
                   .slice(currentIndex, currentIndex + 3)
                   .map((prod) => (
                     <ProductCard
-                      key={prod.id}
-                      id={prod.id}
+                      key={prod._id || prod.id}
+                      id={prod._id || prod.id}
                       image={prod.image}
                       title={prod.title}
                       category={prod.category}
@@ -188,8 +193,8 @@ const ProductsCard = ({ addToCart, searchQuery, favorites, toggleFavorite }) => 
             <div className="products-grid">
               {filteredProducts.map((prod) => (
                 <ProductCard
-                  key={prod.id}
-                  id={prod.id}
+                  key={prod._id || prod.id}
+                  id={prod._id || prod.id}
                   image={prod.image}
                   title={prod.title}
                   category={prod.category}

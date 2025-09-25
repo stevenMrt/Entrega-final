@@ -51,34 +51,12 @@ function Navbar({ cartItems, removeFromCart, updateQuantity, clearCart, onSearch
         </button>
 
         <ul className={`navbar-menu ${menuOpen ? "active" : ""}`}>
-          <li>
-            <Link to="/" className="navbar-link" onClick={() => setMenuOpen(false)}>Inicio</Link>
-          </li>
-          <li>
-            <Link 
-              to="/" 
-              className="navbar-link" 
-              onClick={() => {
-                setMenuOpen(false);
-                setTimeout(() => {
-                  document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth' });
-                }, 100);
-              }}
-            >
-              Catálogo
-            </Link>
-          </li>
-          <li>
-            <Link to="/nosotros" className="navbar-link" onClick={() => setMenuOpen(false)}>Nosotros</Link>
-          </li>
-          <li>
-            <Link to="/contacto" className="navbar-link" onClick={() => setMenuOpen(false)}>Contacto</Link>
-          </li>
-          <li>
-            <Link to="/wishlist" className="navbar-link" onClick={() => setMenuOpen(false)}>Favoritos</Link>
-          </li>
-          {user ? (
+          {user?.role === 'admin' ? (
+            // Menú solo para administrador
             <>
+              <li>
+                <Link to="/admin" className="navbar-link admin-link" onClick={() => setMenuOpen(false)}>Dashboard</Link>
+              </li>
               <li>
                 <span className="user-greeting">Hola, {user.name}</span>
               </li>
@@ -87,45 +65,104 @@ function Navbar({ cartItems, removeFromCart, updateQuantity, clearCart, onSearch
               </li>
             </>
           ) : (
-            <li>
-              <Link to="/login" className="navbar-link" onClick={() => setMenuOpen(false)}>Iniciar Sesión</Link>
-            </li>
+            // Menú completo para usuarios normales
+            <>
+              {/* Navegación principal */}
+              <li>
+                <Link to="/" className="navbar-link" onClick={() => setMenuOpen(false)}>Inicio</Link>
+              </li>
+              <li>
+                <Link 
+                  to="/" 
+                  className="navbar-link" 
+                  onClick={() => {
+                    setMenuOpen(false);
+                    setTimeout(() => {
+                      document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
+                  }}
+                >
+                  Catálogo
+                </Link>
+              </li>
+              <li>
+                <Link to="/nosotros" className="navbar-link" onClick={() => setMenuOpen(false)}>Nosotros</Link>
+              </li>
+              <li>
+                <Link to="/contacto" className="navbar-link" onClick={() => setMenuOpen(false)}>Contacto</Link>
+              </li>
+              
+              {/* Sección de usuario logueado */}
+              {user && (
+                <>
+                  <li>
+                    <Link to="/wishlist" className="navbar-link" onClick={() => setMenuOpen(false)}>Favoritos</Link>
+                  </li>
+                  <li>
+                    <Link to="/orders" className="navbar-link" onClick={() => setMenuOpen(false)}>Mis Pedidos</Link>
+                  </li>
+                  <li>
+                    <Link to="/perfil" className="navbar-link" onClick={() => setMenuOpen(false)}>Creador</Link>
+                  </li>
+                  <li>
+                    <span className="user-greeting">Hola, {user.name}</span>
+                  </li>
+                  <li>
+                    <button className="logout-btn" onClick={onLogout}>Cerrar Sesión</button>
+                  </li>
+                </>
+              )}
+              
+              {/* Sección de usuario no logueado */}
+              {!user && (
+                <>
+                  <li>
+                    <Link to="/login" className="navbar-link" onClick={() => setMenuOpen(false)}>Iniciar Sesión</Link>
+                  </li>
+                  <li>
+                    <Link to="/register" className="navbar-link" onClick={() => setMenuOpen(false)}>Registrarse</Link>
+                  </li>
+                </>
+              )}
+            </>
           )}
         </ul>
 
-        <div className="navbar-actions">
-          <button className="search-toggle" onClick={toggleSearch} aria-label="Buscar">
-            <FaSearch />
-          </button>
-          
-          {showSearch && (
-            <div className="search-dropdown">
-              <input
-                type="text"
-                placeholder="Buscar productos..."
-                value={searchTerm}
-                onChange={handleSearchChange}
-                className="navbar-search-mobile"
-                autoFocus
-              />
-            </div>
-          )}
-
-          <input
-            type="text"
-            placeholder="Buscar productos..."
-            value={searchTerm}
-            onChange={handleSearchChange}
-            className="navbar-search"
-          />
-
-          <div className="navbar-cart">
-            <button onClick={toggleCart} className="cart-btn">
-              <FaShoppingCart />
-              {totalItems > 0 && <span className="cart-count">{totalItems}</span>}
+        {user?.role !== 'admin' && (
+          <div className="navbar-actions">
+            <button className="search-toggle" onClick={toggleSearch} aria-label="Buscar">
+              <FaSearch />
             </button>
+            
+            {showSearch && (
+              <div className="search-dropdown">
+                <input
+                  type="text"
+                  placeholder="Buscar productos..."
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  className="navbar-search-mobile"
+                  autoFocus
+                />
+              </div>
+            )}
+
+            <input
+              type="text"
+              placeholder="Buscar productos..."
+              value={searchTerm}
+              onChange={handleSearchChange}
+              className="navbar-search"
+            />
+
+            <div className="navbar-cart">
+              <button onClick={toggleCart} className="cart-btn">
+                <FaShoppingCart />
+                {totalItems > 0 && <span className="cart-count">{totalItems}</span>}
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </nav>
 
       {menuOpen && (

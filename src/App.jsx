@@ -6,10 +6,15 @@ import ContactPage from './features/Contacto/pages/ContactPages';
 import ProfilePage from './features/profile/pages/ProfilePage';
 import AboutPage from './features/nosotros/pages/AboutPage';
 import LoginPage from './features/auth/pages/LoginPage';
+import RegisterPage from './features/auth/pages/RegisterPage';
+import ForgotPasswordPage from './features/auth/pages/ForgotPasswordPage';
 import CheckoutPage from './features/checkout/pages/CheckoutPage';
 import WishlistPage from './features/wishlist/pages/WishlistPage';
+import OrderHistoryPage from './features/orders/pages/OrderHistoryPage';
+import AdminDashboard from './features/admin/pages/AdminDashboard';
 import { ToastContainer, toast } from "react-toastify";
 import { useState, useEffect } from "react";
+import { authAPI, cartAPI, favoritesAPI } from './services/api';
 import './App.css';
 import './Components/ProductsCard.css';
 
@@ -23,10 +28,41 @@ function App() {
     const saved = localStorage.getItem('shop-stev-favorites');
     return saved ? JSON.parse(saved) : [];
   });
-  const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('shop-stev-user');
-    return saved ? JSON.parse(saved) : null;
-  });
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Verificar autenticación al cargar
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = localStorage.getItem('shop-stev-token');
+      if (token) {
+        try {
+          const response = await authAPI.getMe();
+          setUser(response.user);
+          loadUserData();
+        } catch (error) {
+          localStorage.removeItem('shop-stev-token');
+        }
+      }
+      setLoading(false);
+    };
+    checkAuth();
+  }, []);
+
+  const loadUserData = async () => {
+    if (!localStorage.getItem('shop-stev-token')) return;
+    
+    try {
+      const [cartData, favoritesData] = await Promise.all([
+        cartAPI.get(),
+        favoritesAPI.get()
+      ]);
+      setCartItems(cartData);
+      setFavorites(favoritesData);
+    } catch (error) {
+      console.error('Error loading user data:', error);
+    }
+  };
 
   useEffect(() => {
     localStorage.setItem('shop-stev-cart', JSON.stringify(cartItems));
@@ -36,18 +72,18 @@ function App() {
     localStorage.setItem('shop-stev-favorites', JSON.stringify(favorites));
   }, [favorites]);
 
-  const addToCart = (product) => {
-    const existingItem = cartItems.find(item => item.id === product.id);
-    if (existingItem) {
-      setCartItems(cartItems.map(item => 
-        item.id === product.id 
-          ? { ...item, quantity: (item.quantity || 1) + 1 }
-          : item
-      ));
-      toast.info(`Cantidad actualizada de ${product.name} 📦`, { autoClose: 2000 });
-    } else {
-      setCartItems([...cartItems, { ...product, quantity: 1 }]);
-      toast.success(`${product.name} agregado al carrito 🛒`, { autoClose: 2000 });
+  const addToCart = async (product) => {
+    if (!user) {
+      toast.error('Debes iniciar sesión para agregar al carrito', { autoClose: 2000 });
+      return;
+    }
+    
+    try {
+      const updatedCart = await cartAPI.add(product._id || product.id, 1);
+      setCartItems(updatedCart);
+      toast.success(`${product.title || product.name} agregado al carrito 🛒`, { autoClose: 2000 });
+    } catch (error) {
+      toast.error('Error al agregar al carrito', { autoClose: 2000 });
     }
   };
 
@@ -68,14 +104,18 @@ function App() {
     setCartItems(newCart);
   };
 
-  const toggleFavorite = (product) => {
-    const isFavorite = favorites.some(fav => fav.id === product.id);
-    if (isFavorite) {
-      setFavorites(favorites.filter(fav => fav.id !== product.id));
-      toast.info(`${product.name} eliminado de favoritos 💔`, { autoClose: 2000 });
-    } else {
-      setFavorites([...favorites, product]);
-      toast.success(`${product.name} agregado a favoritos ❤️`, { autoClose: 2000 });
+  const toggleFavorite = async (product) => {
+    if (!user) {
+      toast.error('Debes iniciar sesión para agregar a favoritos', { autoClose: 2000 });
+      return;
+    }
+    
+    try {
+      const response = await favoritesAPI.toggle(product._id || product.id);
+      setFavorites(response.favorites);
+      toast.success(response.message, { autoClose: 2000 });
+    } catch (error) {
+      toast.error('Error al actualizar favoritos', { autoClose: 2000 });
     }
   };
 
@@ -86,12 +126,15 @@ function App() {
 
   const handleLogin = (userData) => {
     setUser(userData);
+    loadUserData();
     toast.success(`¡Bienvenido ${userData.name}! 👋`, { autoClose: 2000 });
   };
 
   const handleLogout = () => {
     setUser(null);
-    localStorage.removeItem('shop-stev-user');
+    setCartItems([]);
+    setFavorites([]);
+    localStorage.removeItem('shop-stev-token');
     toast.info("Sesión cerrada 👋", { autoClose: 2000 });
   };
 
@@ -102,20 +145,25 @@ function App() {
 
   const total = cartItems.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
 
+  if (loading) {
+    return <div>Cargando...</div>;
+  }
+
   return (
     <>
-      <MainLayout 
-        cartItems={cartItems} 
-        removeFromCart={removeFromCart} 
-        updateQuantity={updateQuantity}
-        clearCart={clearCart}
-        onSearch={setSearchQuery}
-        user={user}
-        onLogout={handleLogout}
-      >
-        <Routes>
-          <Route path="/" element={
-            <>
+      <Routes>
+        {/* Rutas sin layout */}
+        <Route path="/" element={
+          user ? (
+            <MainLayout 
+              cartItems={cartItems} 
+              removeFromCart={removeFromCart} 
+              updateQuantity={updateQuantity}
+              clearCart={clearCart}
+              onSearch={setSearchQuery}
+              user={user}
+              onLogout={handleLogout}
+            >
               <Banner />
               <ProductsCard 
                 addToCart={addToCart} 
@@ -123,16 +171,132 @@ function App() {
                 favorites={favorites}
                 toggleFavorite={toggleFavorite}
               />
-            </>
-          } />
-          <Route path="/contacto" element={<ContactPage />} />
-          <Route path="/perfil" element={<ProfilePage favorites={favorites} />} />
-          <Route path="/nosotros" element={<AboutPage />} />
-          <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
-          <Route path="/checkout" element={<CheckoutPage cartItems={cartItems} total={total} onOrderComplete={handleOrderComplete} />} />
-          <Route path="/wishlist" element={<WishlistPage favorites={favorites} toggleFavorite={toggleFavorite} addToCart={addToCart} />} />
-        </Routes>
-      </MainLayout>
+            </MainLayout>
+          ) : (
+            <LoginPage onLogin={handleLogin} />
+          )
+        } />
+        <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
+        <Route path="/register" element={<RegisterPage onLogin={handleLogin} />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        
+        {/* Rutas con layout */}
+        <Route path="/home" element={
+          <MainLayout 
+            cartItems={cartItems} 
+            removeFromCart={removeFromCart} 
+            updateQuantity={updateQuantity}
+            clearCart={clearCart}
+            onSearch={setSearchQuery}
+            user={user}
+            onLogout={handleLogout}
+          >
+            <Banner />
+            <ProductsCard 
+              addToCart={addToCart} 
+              searchQuery={searchQuery}
+              favorites={favorites}
+              toggleFavorite={toggleFavorite}
+            />
+          </MainLayout>
+        } />
+        <Route path="/contacto" element={
+          <MainLayout 
+            cartItems={cartItems} 
+            removeFromCart={removeFromCart} 
+            updateQuantity={updateQuantity}
+            clearCart={clearCart}
+            onSearch={setSearchQuery}
+            user={user}
+            onLogout={handleLogout}
+          >
+            <ContactPage />
+          </MainLayout>
+        } />
+        <Route path="/perfil" element={
+          <MainLayout 
+            cartItems={cartItems} 
+            removeFromCart={removeFromCart} 
+            updateQuantity={updateQuantity}
+            clearCart={clearCart}
+            onSearch={setSearchQuery}
+            user={user}
+            onLogout={handleLogout}
+          >
+            <ProfilePage favorites={favorites} />
+          </MainLayout>
+        } />
+        <Route path="/nosotros" element={
+          <MainLayout 
+            cartItems={cartItems} 
+            removeFromCart={removeFromCart} 
+            updateQuantity={updateQuantity}
+            clearCart={clearCart}
+            onSearch={setSearchQuery}
+            user={user}
+            onLogout={handleLogout}
+          >
+            <AboutPage />
+          </MainLayout>
+        } />
+        <Route path="/checkout" element={
+          <MainLayout 
+            cartItems={cartItems} 
+            removeFromCart={removeFromCart} 
+            updateQuantity={updateQuantity}
+            clearCart={clearCart}
+            onSearch={setSearchQuery}
+            user={user}
+            onLogout={handleLogout}
+          >
+            <CheckoutPage cartItems={cartItems} total={total} onOrderComplete={handleOrderComplete} />
+          </MainLayout>
+        } />
+        <Route path="/wishlist" element={
+          <MainLayout 
+            cartItems={cartItems} 
+            removeFromCart={removeFromCart} 
+            updateQuantity={updateQuantity}
+            clearCart={clearCart}
+            onSearch={setSearchQuery}
+            user={user}
+            onLogout={handleLogout}
+          >
+            <WishlistPage favorites={favorites} toggleFavorite={toggleFavorite} addToCart={addToCart} />
+          </MainLayout>
+        } />
+        <Route path="/orders" element={
+          <MainLayout 
+            cartItems={cartItems} 
+            removeFromCart={removeFromCart} 
+            updateQuantity={updateQuantity}
+            clearCart={clearCart}
+            onSearch={setSearchQuery}
+            user={user}
+            onLogout={handleLogout}
+          >
+            <OrderHistoryPage />
+          </MainLayout>
+        } />
+        <Route path="/admin" element={
+          user?.role === 'admin' ? (
+            <MainLayout 
+              cartItems={cartItems} 
+              removeFromCart={removeFromCart} 
+              updateQuantity={updateQuantity}
+              clearCart={clearCart}
+              onSearch={setSearchQuery}
+              user={user}
+              onLogout={handleLogout}
+            >
+              <AdminDashboard />
+            </MainLayout>
+          ) : (
+            <div>Acceso denegado</div>
+          )
+        } />
+      </Routes>
+      
       <ToastContainer 
         position="top-right"
         autoClose={3000}
